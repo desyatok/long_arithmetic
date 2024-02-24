@@ -33,32 +33,13 @@ void free_num(bignum_t *num)
     }
 }
 
-_Bool delete_leading_zeros(bignum_t *num)
+void delete_leading_zeros(bignum_t *num)
 {
-    int leading_zeros = 0;
-
-    do
+    while (num->size > 1 && num->digits[num->size - 1] == '0')
     {
-        leading_zeros++;
+        num->size--;
     }
-    while (leading_zeros < num->size && num->digits[num->size - leading_zeros - 1] == '0');
-
-    if (leading_zeros == num->size)
-    {
-        if (num->sign == -1)
-        {
-            printf("String contains incorrect num"); // "-0" не является числом
-            return 0;
-        }
-        num->size = 1;
-    }
-    else
-    {
-        num->size -= leading_zeros;
-    }
-
-    num->digits = realloc(num->digits, num->size * sizeof(char));
-    return 1;
+    num->digits = realloc(num->digits, num->size);
 }
 
 _Bool is_digit(const char c)
@@ -100,14 +81,14 @@ bignum_t *num_init(const char *str)
         num->digits[num->size - i - 1] = str[i];
     }
 
-    if (num->digits[num->size - 1] == '0' && num->size != 1)
+    delete_leading_zeros(num);
+    if (num->sign == -1 && num->digits[num->size - 1] == '0') // -0
     {
-        if (!delete_leading_zeros(num))
-        {
-            free_num(num);
-            return NULL;
-        }
+        printf("String contains incorrect num");
+        free(num);
+        return NULL;
     }
+
     return num;
 }
 
@@ -197,7 +178,7 @@ bignum_t *add_ui(const bignum_t *num1, const bignum_t *num2)
 bignum_t *subtract_ui(const bignum_t *num1, const bignum_t *num2)
 {
     bignum_t * result = malloc(sizeof(bignum_t));
-    result->size =  num1->size;
+    result->size = num1->size;
     result->digits = malloc(result->size * sizeof(char));
 
     int borrow = 0;
@@ -214,14 +195,7 @@ bignum_t *subtract_ui(const bignum_t *num1, const bignum_t *num2)
         }
     }
 
-    if (result->digits[result->size - 1] == '0' && result->size != 1)
-    {
-        if (!delete_leading_zeros(result))
-        {
-            free_num(result);
-            return NULL;
-        }
-    }
+    delete_leading_zeros(result);
 
     return result;
 }
