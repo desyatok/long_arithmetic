@@ -88,9 +88,7 @@ bignum_t *num_init(const char *str)
     delete_leading_zeros(num);
     if (num->sign == -1 && num->digits[num->size - 1] == '0') // -0
     {
-        printf("String contains incorrect num");
-        free(num);
-        return NULL;
+        num->sign = 1;
     }
 
     return num;
