@@ -201,6 +201,32 @@ bignum_t *subtract_ui(const bignum_t *num1, const bignum_t *num2)
     return result;
 }
 
+bignum_t *calc_sign_and_subtract(const bignum_t *num1, const bignum_t *num2)
+{
+    bignum_t *result;
+    int cmp = compare(num1, num2);
+
+    if (cmp > 0)
+    {
+        result = subtract_ui(num1, num2);
+        result->sign = num1->sign * cmp;
+    }
+    else if (cmp < 0)
+    {
+        result = subtract_ui(num2, num1);
+        result->sign = num1->sign * cmp;
+    }
+    else
+    {
+        result = malloc(sizeof(bignum_t));
+        result->size = 1;
+        result->sign = 1;
+        result->digits = malloc(sizeof(char));
+        result->digits[0] = '0';
+    }
+    return result;
+}
+
 bignum_t *add(const bignum_t *num1, const bignum_t *num2)
 {
     if (num1 == NULL || num2 == NULL) return NULL;
@@ -210,28 +236,7 @@ bignum_t *add(const bignum_t *num1, const bignum_t *num2)
     }
     else
     {
-        bignum_t *result;
-        int cmp = compare(num1, num2);
-
-        if (cmp > 0)
-        {
-            result = subtract_ui(num1, num2);
-            result->sign = num1->sign * cmp;
-        }
-        else if (cmp < 0)
-        {
-            result = subtract_ui(num2, num1);
-            result->sign = num1->sign * cmp;
-        }
-        else
-        {
-            result = malloc(sizeof(bignum_t));
-            result->size = 1;
-            result->sign = 1;
-            result->digits = malloc(sizeof(char));
-            result->digits[0] = '0';
-        }
-        return result;
+        return calc_sign_and_subtract(num1, num2);
     }
 }
 
@@ -240,28 +245,7 @@ bignum_t *subtract(const bignum_t *num1, const bignum_t *num2)
     if (num1 == NULL || num2 == NULL) return NULL;
     if (num1->sign * num2->sign == 1)
     {
-        bignum_t *result;
-        int cmp = compare(num1, num2);
-
-        if (cmp > 0)
-        {
-            result = subtract_ui(num1, num2);
-            result->sign = num1->sign * cmp;
-        }
-        else if (cmp < 0)
-        {
-            result = subtract_ui(num2, num1);
-            result->sign = num1->sign * cmp;
-        }
-        else
-        {
-            result = malloc(sizeof(bignum_t));
-            result->size = 1;
-            result->sign = 1;
-            result->digits = malloc(sizeof(char));
-            result->digits[0] = '0';
-        }
-        return result;
+        return calc_sign_and_subtract(num1, num2);
     }
     else
     {
