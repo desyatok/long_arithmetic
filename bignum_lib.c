@@ -35,11 +35,15 @@ void free_num(bignum_t *num)
 
 void delete_leading_zeros(bignum_t *num)
 {
-    while (num->size > 1 && num->digits[num->size - 1] == '0')
+    int size = num->size;
+    while (num->size > 1 && (num->digits[num->size - 1] == '0' || num->digits[num->size - 1] == 0))
     {
         num->size--;
     }
-    num->digits = realloc(num->digits, num->size);
+    if (num->size != size)
+    {
+        num->digits = realloc(num->digits, num->size);
+    }
 }
 
 _Bool is_digit(const char c)
@@ -148,7 +152,7 @@ bignum_t *add_ui(const bignum_t *num1, const bignum_t *num2)
 {
     if (num1 == NULL || num2 == NULL) return NULL;
 
-    bignum_t * result = malloc(sizeof(bignum_t));
+    bignum_t *result = malloc(sizeof(bignum_t));
     result->size = max(num1->size, num2->size);
     result->sign = num1->sign;
     result->digits = malloc(result->size);
@@ -196,7 +200,6 @@ bignum_t *subtract_ui(const bignum_t *num1, const bignum_t *num2)
     }
 
     delete_leading_zeros(result);
-
     return result;
 }
 
@@ -264,4 +267,38 @@ bignum_t *subtract(const bignum_t *num1, const bignum_t *num2)
     {
         return add_ui(num1, num2);
     }
+}
+
+bignum_t *multiply(const bignum_t *num1, const bignum_t *num2)
+{
+    if (num1 == NULL || num2 == NULL)
+    {
+        return NULL;
+    }
+
+    bignum_t *result = malloc(sizeof(bignum_t));
+    result->sign = num1->sign * num2->sign;
+    result->size = num1->size + num2->size;
+    result->digits = calloc(result->size, sizeof(char));
+
+    int product, carry;
+
+    for (size_t i = 0; i < num1->size; i++)
+    {
+        carry = 0;
+        for (int j = 0; j < num2->size; j++)
+        {
+            product = (result->digits[i + j] == '\0' ? 0 : result->digits[i + j] - '0')
+                                + (i < num2->size ? (num1->digits[i] - '0') * (num2->digits[j] - '0') : 0) + carry;
+            result->digits[i + j] = product % BASE + '0';
+            carry = product / BASE;
+        }
+        if (carry)
+        {
+            result->digits[i + num2->size] = carry + '0';
+        }
+    }
+
+    delete_leading_zeros(result);
+    return result;
 }
