@@ -179,7 +179,7 @@ bignum_t *add_ui(const bignum_t *num1, const bignum_t *num2)
 
 bignum_t *subtract_ui(const bignum_t *num1, const bignum_t *num2)
 {
-    bignum_t * result = malloc(sizeof(bignum_t));
+    bignum_t *result = malloc(sizeof(bignum_t));
     result->size = num1->size;
     result->digits = malloc(result->size * sizeof(char));
 
@@ -210,8 +210,8 @@ bignum_t *add(const bignum_t *num1, const bignum_t *num2)
     }
     else
     {
-        bignum_t *result = malloc(sizeof(bignum_t));
-        int cmp = compare(num1,num2);
+        bignum_t *result;
+        int cmp = compare(num1, num2);
 
         if (cmp > 0)
         {
@@ -225,6 +225,7 @@ bignum_t *add(const bignum_t *num1, const bignum_t *num2)
         }
         else
         {
+            result = malloc(sizeof(bignum_t));
             result->size = 1;
             result->sign = 1;
             result->digits = malloc(sizeof(char));
@@ -239,8 +240,8 @@ bignum_t *subtract(const bignum_t *num1, const bignum_t *num2)
     if (num1 == NULL || num2 == NULL) return NULL;
     if (num1->sign * num2->sign == 1)
     {
-        bignum_t *result = malloc(sizeof(bignum_t));
-        int cmp = compare(num1,num2);
+        bignum_t *result;
+        int cmp = compare(num1, num2);
 
         if (cmp > 0)
         {
@@ -254,6 +255,7 @@ bignum_t *subtract(const bignum_t *num1, const bignum_t *num2)
         }
         else
         {
+            result = malloc(sizeof(bignum_t));
             result->size = 1;
             result->sign = 1;
             result->digits = malloc(sizeof(char));
