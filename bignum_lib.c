@@ -263,7 +263,8 @@ bignum_t *multiply(const bignum_t *num1, const bignum_t *num2)
     bignum_t *result = malloc(sizeof(bignum_t));
     result->sign = num1->sign * num2->sign;
     result->size = num1->size + num2->size;
-    result->digits = calloc(result->size, sizeof(char));
+    result->digits = malloc(result->size * sizeof(char));
+    memset(result->digits,'0',result->size);
 
     int product, carry;
 
@@ -272,8 +273,8 @@ bignum_t *multiply(const bignum_t *num1, const bignum_t *num2)
         carry = 0;
         for (int j = 0; j < num2->size; j++)
         {
-            product = (result->digits[i + j] == '\0' ? 0 : result->digits[i + j] - '0')
-                                + (i < num2->size ? (num1->digits[i] - '0') * (num2->digits[j] - '0') : 0) + carry;
+            product = (result->digits[i + j] - '0')
+                                + (i < num1->size ? (num1->digits[i] - '0') * (num2->digits[j] - '0') : 0) + carry;
             result->digits[i + j] = product % BASE + '0';
             carry = product / BASE;
         }
