@@ -318,13 +318,12 @@ bignum_t *divide_by_10(bignum_t *num) // работает как /= 10
     return num;
 }
 
-bignum_t *divide(const bignum_t *num1, const bignum_t *num2)
+bignum_t *divide_aux(const bignum_t *num1, const bignum_t *num2, _Bool get_remainder)
 {
     if (num1 == NULL || num2 == NULL || (num2->size == 1 && num2->digits[0] == '0'))
     {
         return NULL;
     }
-    if (compare(num1,num2) < 0) return num_init("0");
 
     bignum_t *result = malloc(sizeof(bignum_t));
     result->size = num1->size;
@@ -336,6 +335,7 @@ bignum_t *divide(const bignum_t *num1, const bignum_t *num2)
     bignum_t *ten = num_init("10");
     bignum_t *nil = num_init("0");
     bignum_t *remainder = duplicate(num1);
+    remainder->sign = 1;
     bignum_t *to_sub = duplicate(num2);
 
     while (to_sub->size < num1->size)
@@ -378,9 +378,55 @@ bignum_t *divide(const bignum_t *num1, const bignum_t *num2)
         result = divide_by_10(result);
     }
     delete_leading_zeros(result);
+
+    if (num1->sign == -1) // преобразование остатка и частного при действиях с отрицательными числами
+    {
+        bignum_t *neg_one = num_init("-1");
+        bignum_t *sum1 = add(result, neg_one);
+        char *tmp1 = result->digits;
+        result->digits = sum1->digits;
+        result->size = sum1->size;
+        result->sign = sum1->sign;
+
+        bignum_t *sum2;
+        if (num2->sign == 1)
+        {
+            sum2 = subtract(remainder,num2);
+        }
+        else
+        {
+            sum2 = add(remainder,num2);
+        }
+        char *tmp2 = remainder->digits;
+        remainder->digits = sum2->digits;
+        remainder->size = sum2->size;
+
+        free(sum1);
+        free(tmp1);
+        free_num(neg_one);
+        free(sum2);
+        free(tmp2);
+    }
+
     free_num(to_sub);
     free_num(nil);
-    free_num(remainder);
     free_num(ten);
+
+    if (get_remainder)
+    {
+        free_num(result);
+        return remainder;
+    }
+    free_num(remainder);
     return result;
+}
+
+bignum_t *divide(const bignum_t *num1, const bignum_t *num2)
+{
+    return divide_aux(num1,num2,0);
+}
+
+bignum_t *division_remainder(const bignum_t *num1, const bignum_t *num2)
+{
+    return divide_aux(num1,num2,1);
 }
