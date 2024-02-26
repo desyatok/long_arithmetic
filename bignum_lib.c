@@ -36,13 +36,13 @@ void free_num(bignum_t *num)
 void delete_leading_zeros(bignum_t *num)
 {
     int size = num->size;
-    while (num->size > 1 && (num->digits[num->size - 1] == '0' || num->digits[num->size - 1] == 0))
+    while (num->size > 1 && num->digits[num->size - 1] == '0')
     {
         num->size--;
     }
     if (num->size != size)
     {
-        num->digits = realloc(num->digits, num->size);
+        num->digits = realloc(num->digits, num->size * sizeof(char));
     }
 }
 
@@ -285,5 +285,102 @@ bignum_t *multiply(const bignum_t *num1, const bignum_t *num2)
     }
 
     delete_leading_zeros(result);
+    return result;
+}
+
+bignum_t *duplicate(const bignum_t *num)
+{
+    if (num == NULL) return NULL;
+    bignum_t *dup = malloc(sizeof(bignum_t));
+    dup->size = num->size;
+    dup->sign = num->sign;
+    dup->digits = malloc(dup->size * sizeof(char));
+    for (size_t i = 0; i < dup->size; i++)
+    {
+        dup->digits[i] = num->digits[i];
+    }
+    return dup;
+}
+
+bignum_t *divide_by_10(bignum_t *num) // работает как /= 10
+{
+    if (num == NULL) return NULL;
+    if (num->size == 1) return num;
+    char *divided = malloc((num->size - 1) * sizeof(char));
+    for (int i = 1; i < num->size; i++)
+    {
+        divided[i - 1] = num->digits[i];
+    }
+    char *tmp = num->digits;
+    num->size--;
+    num->digits = divided;
+    free(tmp);
+    return num;
+}
+
+bignum_t *divide(const bignum_t *num1, const bignum_t *num2)
+{
+    if (num1 == NULL || num2 == NULL || (num2->size == 1 && num2->digits[0] == '0'))
+    {
+        return NULL;
+    }
+    if (compare(num1,num2) < 0) return num_init("0");
+
+    bignum_t *result = malloc(sizeof(bignum_t));
+    result->size = num1->size;
+    result->sign = num1->sign * num2->sign;
+    result->digits = malloc(result->size * sizeof(char));
+    memset(result->digits,'0',result->size);
+    int result_size = 0;
+
+    bignum_t *ten = num_init("10");
+    bignum_t *nil = num_init("0");
+    bignum_t *remainder = duplicate(num1);
+    bignum_t *to_sub = duplicate(num2);
+
+    while (to_sub->size < num1->size)
+    {
+        bignum_t *mul = multiply(to_sub, ten);
+        to_sub->size = mul->size;
+        to_sub->digits = realloc(to_sub->digits, to_sub->size * sizeof(char));
+        for (int i = 0; i < to_sub->size; i++)
+        {
+            to_sub->digits[i] = mul->digits[i];
+        }
+        free_num(mul);
+    }
+
+    for (int i = num1->size - 1; i >= 0 && to_sub->size >= num2->size; i--)
+    {
+        int digit = 0;
+        while (compare(remainder, nil) >= 0)
+        {
+            if (compare(remainder, to_sub) < 0)
+            {
+                to_sub = divide_by_10(to_sub);
+                break;
+            }
+            bignum_t *subtracted = subtract_ui(remainder, to_sub);
+            for (int j = 0; j < remainder->size; j++)
+            {
+                remainder->digits[j] = j < subtracted->size ? subtracted->digits[j] : '0';
+            }
+            free_num(subtracted);
+            delete_leading_zeros(remainder);
+            digit++;
+        }
+        result->digits[i] = digit + '0';
+        result_size++;
+    }
+
+    while(result->size > result_size)
+    {
+        result = divide_by_10(result);
+    }
+    delete_leading_zeros(result);
+    free_num(to_sub);
+    free_num(nil);
+    free_num(remainder);
+    free_num(ten);
     return result;
 }
