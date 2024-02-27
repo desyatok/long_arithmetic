@@ -108,6 +108,35 @@ static inline void subs_setup()
     strcpy( subs[5]->digits, "07575679999999999999999999");
 }
 
+static inline void muls_setup()
+{
+    muls = malloc(sizeof(bignum_t *) * NUM_OF_BN);
+    for (int i = 1; i < NUM_OF_BN; i += 2)
+    {
+        muls[i] = malloc(sizeof(bignum_t));
+    }
+    muls[0] = bn_mul(nums[0],nums[1]);
+
+    muls[1]->size = 43;
+    muls[1]->sign = 1;
+    muls[1]->digits = malloc(muls[1]->size * sizeof(char) + 1);
+    strcpy( muls[1]->digits, "0926058737476130796073475758064276159819356");
+
+    muls[2] = bn_mul(nums[2],nums[3]);
+
+    muls[3]->size = 28;
+    muls[3]->sign = -1;
+    muls[3]->digits = malloc(muls[3]->size * sizeof(char) + 1);
+    strcpy( muls[3]->digits, "0000499610353991978788860081");
+
+    muls[4] = bn_mul(nums[4],nums[5]);
+
+    muls[5]->size = 1;
+    muls[5]->sign = 1;
+    muls[5]->digits = malloc(muls[5]->size * sizeof(char) + 1);
+    strcpy( muls[5]->digits, "0");
+}
+
 void test_setup(void)
 {
     nums = malloc(sizeof(bignum_t *) * NUM_OF_BN);
@@ -124,6 +153,7 @@ void test_setup(void)
     strs_setup();
     sums_setup();
     subs_setup();
+    muls_setup();
 }
 
 void test_teardown(void) {
@@ -144,6 +174,12 @@ void test_teardown(void) {
         bn_free(subs[i]);
     }
     free(subs);
+
+    for (int i = 0; i < NUM_OF_BN; i++)
+    {
+        bn_free(muls[i]);
+    }
+    free(muls);
 
     for (int i = 1; i < NUM_OF_BN; i += 2)
     {
@@ -216,6 +252,20 @@ MU_TEST(test_sub3)
     mu_check(bn_equal(subs[4], subs[5]));
 }
 
+MU_TEST(test_mul1)
+{
+    mu_check(bn_equal(muls[0], muls[1]));
+}
+MU_TEST(test_mul2)
+{
+    mu_check(bn_equal(muls[2], muls[3]));
+}
+MU_TEST(test_mul3)
+{
+    mu_check(bn_equal(muls[4], muls[5]));
+}
+
+
 MU_TEST_SUITE(test_suite) {
     MU_SUITE_CONFIGURE(&test_setup, &test_teardown);
 
@@ -234,6 +284,10 @@ MU_TEST_SUITE(test_suite) {
     MU_RUN_TEST(test_sub1);
     MU_RUN_TEST(test_sub2);
     MU_RUN_TEST(test_sub3);
+
+    MU_RUN_TEST(test_mul1);
+    MU_RUN_TEST(test_mul2);
+    MU_RUN_TEST(test_mul3);
 }
 
 int main(int argc, char *argv[]) {

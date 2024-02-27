@@ -285,6 +285,7 @@ bignum_t *bn_mul(const bignum_t *num1, const bignum_t *num2)
     }
 
     delete_leading_zeros(result);
+    if (result->size == 1 && result->digits[0] == '0') result->sign = 1;
     return result;
 }
 
