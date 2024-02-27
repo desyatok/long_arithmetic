@@ -28,5 +28,6 @@ char *bn_to_str(const bignum_t *);
 
 void bn_free(bignum_t *);
 
+int bn_equal(const bignum_t *, const bignum_t *);
 
 #endif //BIGNUM_LIB_H
