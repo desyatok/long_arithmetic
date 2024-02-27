@@ -137,6 +137,58 @@ static inline void muls_setup()
     strcpy( muls[5]->digits, "0");
 }
 
+static inline void divs_setup()
+{
+    divs = malloc(sizeof(bignum_t *) * NUM_OF_BN);
+    for (int i = 1; i < NUM_OF_BN - 1; i += 2)
+    {
+        divs[i] = malloc(sizeof(bignum_t));
+    }
+    divs[0] = bn_div(nums[0],nums[1]);
+
+    divs[1]->size = 22;
+    divs[1]->sign = 1;
+    divs[1]->digits = malloc(divs[1]->size * sizeof(char) + 1);
+    strcpy( divs[1]->digits, "4050911630533891485251");
+
+    divs[2] = bn_div(nums[2],nums[3]);
+
+    divs[3]->size = 1;
+    divs[3]->sign = 1;
+    divs[3]->digits = malloc(divs[3]->size * sizeof(char) + 1);
+    strcpy( divs[3]->digits, "0");
+
+    divs[4] = bn_div(nums[4],nums[5]);
+
+    divs[5] = NULL;
+}
+
+static inline void mods_setup()
+{
+    mods = malloc(sizeof(bignum_t *) * NUM_OF_BN);
+    for (int i = 1; i < NUM_OF_BN - 1; i += 2)
+    {
+        mods[i] = malloc(sizeof(bignum_t));
+    }
+    mods[0] = bn_mod(nums[0],nums[1]);
+
+    mods[1]->size = 11;
+    mods[1]->sign = 1;
+    mods[1]->digits = malloc(mods[1]->size * sizeof(char) + 1);
+    strcpy( mods[1]->digits, "22222096361");
+
+    mods[2] = bn_mod(nums[2],nums[3]);
+
+    mods[3]->size = 10;
+    mods[3]->sign = 1;
+    mods[3]->digits = malloc(mods[3]->size * sizeof(char) + 1);
+    strcpy( mods[3]->digits, "7756752432");
+
+    mods[4] = bn_mod(nums[4],nums[5]);
+
+    mods[5] = NULL;
+}
+
 void test_setup(void)
 {
     nums = malloc(sizeof(bignum_t *) * NUM_OF_BN);
@@ -154,6 +206,8 @@ void test_setup(void)
     sums_setup();
     subs_setup();
     muls_setup();
+    divs_setup();
+    mods_setup();
 }
 
 void test_teardown(void) {
@@ -180,6 +234,18 @@ void test_teardown(void) {
         bn_free(muls[i]);
     }
     free(muls);
+
+    for (int i = 0; i < NUM_OF_BN; i++)
+    {
+        bn_free(divs[i]);
+    }
+    free(divs);
+
+    for (int i = 0; i < NUM_OF_BN; i++)
+    {
+        bn_free(mods[i]);
+    }
+    free(mods);
 
     for (int i = 1; i < NUM_OF_BN; i += 2)
     {
@@ -265,6 +331,31 @@ MU_TEST(test_mul3)
     mu_check(bn_equal(muls[4], muls[5]));
 }
 
+MU_TEST(test_div1)
+{
+    mu_check(bn_equal(divs[0], divs[1]));
+}
+MU_TEST(test_div2)
+{
+    mu_check(bn_equal(divs[2], divs[3]));
+}
+MU_TEST(test_div3)
+{
+    mu_check(divs[4] == divs[5]);
+}
+
+MU_TEST(test_mod1)
+{
+    mu_check(bn_equal(mods[0], mods[1]));
+}
+MU_TEST(test_mod2)
+{
+    mu_check(bn_equal(mods[2], mods[3]));
+}
+MU_TEST(test_mod3)
+{
+    mu_check(mods[4] == mods[5]);
+}
 
 MU_TEST_SUITE(test_suite) {
     MU_SUITE_CONFIGURE(&test_setup, &test_teardown);
@@ -288,6 +379,14 @@ MU_TEST_SUITE(test_suite) {
     MU_RUN_TEST(test_mul1);
     MU_RUN_TEST(test_mul2);
     MU_RUN_TEST(test_mul3);
+
+    MU_RUN_TEST(test_div1);
+    MU_RUN_TEST(test_div2);
+    MU_RUN_TEST(test_div3);
+
+    MU_RUN_TEST(test_mod1);
+    MU_RUN_TEST(test_mod2);
+    MU_RUN_TEST(test_mod3);
 }
 
 int main(int argc, char *argv[]) {
