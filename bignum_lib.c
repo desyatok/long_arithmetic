@@ -382,21 +382,24 @@ bignum_t *divide_aux(const bignum_t *num1, const bignum_t *num2, _Bool get_remai
     if (num1->sign == -1) // преобразование остатка и частного при действиях с отрицательными числами
     {
         bignum_t *neg_one = bn_init("-1");
-        bignum_t *sum1 = bn_add(result, neg_one);
+        bignum_t *sum1, *sum2;
+
+        if (num2->sign == 1)
+        {
+            sum1 = bn_add(result, neg_one);
+            sum2 = bn_sub(remainder,num2);
+        }
+        else
+        {
+            sum1 = bn_sub(result,neg_one);
+            sum2 = bn_add(remainder,num2);
+        }
+
         char *tmp1 = result->digits;
         result->digits = sum1->digits;
         result->size = sum1->size;
         result->sign = sum1->sign;
 
-        bignum_t *sum2;
-        if (num2->sign == 1)
-        {
-            sum2 = bn_sub(remainder,num2);
-        }
-        else
-        {
-            sum2 = bn_add(remainder,num2);
-        }
         char *tmp2 = remainder->digits;
         remainder->digits = sum2->digits;
         remainder->size = sum2->size;
