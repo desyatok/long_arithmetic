@@ -430,3 +430,8 @@ bignum_t *bn_mod(const bignum_t *num1, const bignum_t *num2)
 {
     return divide_aux(num1,num2,1);
 }
+
+int bn_equal(const bignum_t *num1, const bignum_t *num2)
+{
+    return compare(num1, num2) == 0 && num1->sign == num2->sign;
+}
